@@ -1,0 +1,44 @@
+# Powershell script to update and install drivers
+# Made by SuperMcFamous
+
+# Run the script as admin
+
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    $arguments = "& '" + $myInvocation.MyCommand.Definition + "'"
+    Start-Process powershell -Verb runAs -ArgumentList $arguments
+    exit
+}
+
+# Update PowershellGet and PackageManagement
+Install-Module -Name PowerShellGet -Force -AllowClobber
+Install-Module -Name PackageManagement -Force -AllowClobber
+
+# Install PSWindowsUpdate if not already installed
+if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
+    Install-Module -Name PSWindowsUpdate -Force
+}
+
+# Import the PSWindowsUpdate
+Import-Module PSWindowsUpdate
+
+# Enable Windows Update service
+Set-Service -Name wuauserv -StartupType Automatic
+Start-Service -Name wuauserv
+
+# Scan for available updates
+Get-WindowsUpdate
+
+# Install all available updates
+Install-WindowsUpdate -AcceptAll -AutoReboot
+
+# Check for any missing drivers using DISM (Deployment Imaging Service and Management Tool)
+Write-Host "Checking for missing drivers using DISM..."
+dism /online /cleanup-image /scanhealth
+
+# Update drivers using the Device Manager CLI utility
+Write-Host "Updating drivers using Device Manager CLI..."
+pnputil /scan-devices
+
+# Restart the computer to ensure all updates are applied
+Read-Host -Prompt "Press Enter to restart your computer and apply updates (or close this window to skip)..."
+Restart-Computer
