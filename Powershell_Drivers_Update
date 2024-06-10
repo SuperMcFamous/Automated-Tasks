@@ -42,3 +42,5 @@ pnputil /scan-devices
 # Restart the computer to ensure all updates are applied
 Read-Host -Prompt "Press Enter to restart your computer and apply updates (or close this window to skip)..."
 Restart-Computer
+
+#If you want this script to be saved to be completed automatically when you open it, save it as a .ps1 file and ensure to run as admin
